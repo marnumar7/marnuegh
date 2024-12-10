@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Registro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-size: 14px;
+            color: #333;
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"], input[type="password"], input[type="file"], input[type="tel"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Registro de Usuario</h2>
+        <form id="registerForm" enctype="multipart/form-data">
+            <label for="usuario">Nombre de Usuario:</label>
+            <input type="text" id="usuario" name="usuario" required>
+
+            <label for="contrasena">Contraseña:</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+
+            <label for="contacto">Contacto (Email o Teléfono):</label>
+            <input type="text" id="contacto" name="contacto" required>
+
+            <label for="whatsapp">¿Tiene WhatsApp? (0 = No, 1 = Sí):</label>
+            <input type="tel" id="whatsapp" name="whatsapp" pattern="^[01]$" title="0 o 1" required>
+
+
+            <label for="imagen_perfil">Imagen de Perfil (máximo 2MB):</label>
+            <input type="file" id="imagen_perfil" name="imagen_perfil" accept="image/*" required>
+
+            <button type="submit">Registrarse</button>
+        </form>
+        <div id="errorMessage" class="error"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let formData = new FormData(this);
+            let file = formData.get('imagen_perfil');
+            
+            // Validar el tamaño del archivo (2 MB máximo)
+            if (file && file.size > 2 * 1024 * 1024) {
+                document.getElementById('errorMessage').textContent = 'La imagen de perfil no puede pesar más de 2 MB.';
+                return;
+            }
+
+            // Hacer la solicitud POST con los datos del formulario
+            fetch('/marnu_rest/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('errorMessage').textContent = data.error;
+                } else {
+                    console.log(data);
+                    localStorage.setItem('jwt',data.token);
+                    if(localStorage.getItem('jwt')){
+                        console.log("JWT creado correctamente")
+                    }else{
+                        console.log("JWT  NO FUE creado correctamente")
+
+                    }
+                    
+
+                    alert('Registro exitoso');
+                    // Redirigir o hacer alguna acción tras el registro exitoso
+                }
+            })
+            .catch(error => {
+                document.getElementById('errorMessage').textContent = 'Error al registrar el usuario';
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Anuncio</title>
+    <style>
+        body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+form {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+form label {
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+form input[type="text"],
+form input[type="number"],
+form input[type="file"],
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease-in-out;
+}
+
+form input[type="text"]:focus,
+form input[type="number"]:focus,
+form input[type="file"]:focus,
+form select:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+form button:hover {
+    background-color: #45a049;
+    transform: scale(1.02);
+}
+
+form button:active {
+    background-color: #3e8e41;
+    transform: scale(1);
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px;
+    }
+    form {
+        padding: 20px;
+        box-shadow: none;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <h1>Crear un nuevo anuncio</h1>
+    <form id="form-anuncio">
+        <label for="tipo">Tipo:</label>
+        <input type="text" id="tipo" name="tipo" required><br><br>
+
+        <label for="opcion">Opción:</label>
+        <input type="text" id="opcion" name="opcion" required><br><br>
+
+        <label for="barrio">Barrio:</label>
+        <input type="text" id="barrio" name="barrio" required><br><br>
+
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" name="precio" required><br><br>
+
+        <label for="ciudad">Ciudad:</label>
+        <input type="text" id="ciudad" name="ciudad" required><br><br>
+
+        <label for="foto_portada">Foto de portada:</label>
+        <input type="file" id="foto_portada" name="foto_portada" accept="image/*" required><br><br>
+
+        <button type="submit">Enviar Anuncio</button>
+    </form>
+
+    <script>
+        async function enviarAnuncio() {
+            const formData = new FormData();
+
+            // Obtener valores del formulario
+            const tipo = document.getElementById('tipo').value;
+            const opcion = document.getElementById('opcion').value;
+            const barrio = document.getElementById('barrio').value;
+            const precio = document.getElementById('precio').value;
+            const ciudad = document.getElementById('ciudad').value;
+            const fotoPortada = document.getElementById('foto_portada').files[0];
+
+            // Validar campos
+            if (!tipo || !opcion || !barrio || !precio || !ciudad || !fotoPortada) {
+                alert('Por favor, complete todos los campos.');
+                return;
+            }
+
+            // Preparar datos
+            formData.append('tipo', tipo);
+            formData.append('opcion', opcion);
+            formData.append('barrio', barrio);
+            formData.append('precio', precio);
+            formData.append('ciudad', ciudad);
+            formData.append('foto_portada', fotoPortada);
+
+            const token = localStorage.getItem('jwt');
+            if (!token) {
+                alert('Token no encontrado. Inicie sesión.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost/marnu_rest/anunciar', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${token}` // Token dinámico
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error || 'No se pudo enviar el anuncio'}`);
+                    return;
+                }
+
+                const data = await response.json();
+                alert('Anuncio creado con éxito');
+                console.log(data);
+            } catch (error) {
+                console.error('Error al enviar el anuncio:', error);
+                alert('Ocurrió un error al enviar el anuncio.');
+            }
+        }
+
+        // Agregar un listener al botón del formulario
+        const form = document.querySelector('#form-anuncio');
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevenir el comportamiento predeterminado del formulario
+            enviarAnuncio();
+        });
+    </script>
+</body>
+</html>
